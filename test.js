@@ -1,34 +1,13 @@
-const ws = require('ws')
+const psclient = require('./client.js')
 
-const socket = new ws('ws://localhost:8000')
+const ps = new psclient('http://localhost:8000')
 
-socket.on('message', message => {
-  console.log(message)
+ps.on('open', () => {
+  ps.subscribe('news')
+  ps.publish('news', 'Hello news channel.')
+  ps.publish('news.uk', 'Hello news.uk channel.')
 })
 
-socket.on('open', () => {
-  socket.send(
-    JSON.stringify({
-      type: 'subscribe',
-      timestamp: new Date(),
-      topic: 'news'
-    })
-  )
-
-  socket.send(
-    JSON.stringify({
-      type: 'subscribe',
-      timestamp: new Date(),
-      topic: 'news.uk'
-    })
-  )
-
-  socket.send(
-    JSON.stringify({
-      type: 'publish',
-      timestamp: new Date(),
-      topic: 'news.uk.london',
-      message: 'Hello, world!'
-    })
-  )
+ps.on('message', message => {
+  console.log(message)
 })
