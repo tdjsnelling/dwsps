@@ -14,6 +14,8 @@ server.on('connection', (socket, req) => {
 
     switch (message.type) {
       case 'subscribe': {
+        console.log(`Subscribe to ${message.topic} by ${clientAddress}`)
+
         const keys = message.topic.split('.')
         const lastKey = keys.pop()
         const lastObj = keys.reduce(
@@ -21,8 +23,11 @@ server.on('connection', (socket, req) => {
           subscriptions
         )
 
-        lastObj[lastKey] = lastObj[lastKey] ? { ...lastObj[lastKey] } : {}
+        // create an empty object if it doesn't already exist
+        if (!lastObj[lastKey]) lastObj[lastKey] = {}
 
+        // if there is no subscribed clients object, create one and add this client
+        // else just add this client to the list
         if (!lastObj[lastKey].subscribedClients) {
           lastObj[lastKey].subscribedClients = { [clientAddress]: socket }
         } else {
@@ -31,10 +36,11 @@ server.on('connection', (socket, req) => {
             [clientAddress]: socket
           }
         }
-        console.log('sub', JSON.stringify(subscriptions, null, 2))
         break
       }
       case 'unsubscribe': {
+        console.log(`Unsubscribe from ${message.topic} by ${clientAddress}`)
+
         const keys = message.topic.split('.')
         const lastKey = keys.pop()
         const lastObj = keys.reduce(
@@ -42,13 +48,29 @@ server.on('connection', (socket, req) => {
           subscriptions
         )
 
+        // if this client is in the list of subscribed clients for this topic, delete it
         if (lastObj[lastKey].subscribedClients[clientAddress]) {
           delete lastObj[lastKey].subscribedClients[clientAddress]
         }
-        console.log('unsub', JSON.stringify(subscriptions, null, 2))
         break
       }
       case 'publish': {
+        console.log(`Publish to ${message.topic} from ${clientAddress}`)
+
+        const keys = message.topic.split('.')
+        const lastKey = keys.pop()
+        const lastObj = keys.reduce(
+          (obj, key) => (obj[key] = obj[key] || {}),
+          subscriptions
+        )
+
+        const subscribedClients = lastObj[lastKey]
+          ? lastObj[lastKey].subscribedClients
+          : {}
+
+        Object.keys(subscribedClients).map(client => {
+          subscribedClients[client].send(JSON.stringify(message))
+        })
         break
       }
       default: {

@@ -2,6 +2,10 @@ const ws = require('ws')
 
 const socket = new ws('ws://localhost:8000')
 
+socket.on('message', message => {
+  console.log(message)
+})
+
 socket.on('open', () => {
   socket.send(
     JSON.stringify({
@@ -13,23 +17,16 @@ socket.on('open', () => {
 
   socket.send(
     JSON.stringify({
-      type: 'subscribe',
+      type: 'publish',
       timestamp: new Date(),
-      topic: 'news.uk'
+      topic: 'news',
+      message: 'Hello, world!'
     })
   )
 
   socket.send(
     JSON.stringify({
-      type: 'subscribe',
-      timestamp: new Date(),
-      topic: 'news.uk.london'
-    })
-  )
-
-  socket.send(
-    JSON.stringify({
-      type: 'subscribe',
+      type: 'unsubscribe',
       timestamp: new Date(),
       topic: 'news'
     })
@@ -37,17 +34,10 @@ socket.on('open', () => {
 
   socket.send(
     JSON.stringify({
-      type: 'unsubscribe',
+      type: 'publish',
       timestamp: new Date(),
-      topic: 'news.uk.london'
-    })
-  )
-
-  socket.send(
-    JSON.stringify({
-      type: 'unsubscribe',
-      timestamp: new Date(),
-      topic: 'news.uk'
+      topic: 'news',
+      message: 'Hello, world! -- again'
     })
   )
 })
