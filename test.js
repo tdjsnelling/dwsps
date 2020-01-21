@@ -1,13 +1,20 @@
-const psclient = require('./client.js')
+const psServer = require('./server')
+const psClient = require('./client')
 
-const ps = new psclient('http://localhost:8000')
+const server = new psServer(8000)
 
-ps.on('open', () => {
-  ps.subscribe('news')
-  ps.publish('news', 'Hello news channel.')
-  ps.publish('news.uk', 'Hello news.uk channel.')
+server.on('subscribe', (topic, client) => {
+  console.log(topic, client)
 })
 
-ps.on('message', message => {
+const client = new psClient('http://localhost:8000')
+
+client.on('open', () => {
+  client.subscribe('news')
+  client.publish('news', 'Hello news channel.')
+  client.publish('news.uk', 'Hello news.uk channel.')
+})
+
+client.on('message', message => {
   console.log(message)
 })
