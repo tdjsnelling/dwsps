@@ -4,7 +4,11 @@ const server = new ws.Server({ port: process.env.PORT || 8000 })
 
 let subscriptions = {}
 
-server.on('connection', socket => {
+server.on('connection', (socket, req) => {
+  const clientAddress = req.headers['x-forwarded-for']
+    ? req.headers['x-forwarded-for'].split(/\s*,\s*/)[0]
+    : req.connection.remoteAddress
+
   socket.on('message', m => {
     const message = JSON.parse(m)
 
@@ -20,13 +24,12 @@ server.on('connection', socket => {
         lastObj[lastKey] = lastObj[lastKey] ? { ...lastObj[lastKey] } : {}
 
         if (!lastObj[lastKey].subscribedClients) {
-          lastObj[lastKey].subscribedClients = [socket]
+          lastObj[lastKey].subscribedClients = { [clientAddress]: socket }
         } else {
-          const existingSubscribedClients = [
-            ...lastObj[lastKey].subscribedClients
-          ]
-          existingSubscribedClients.push(socket)
-          lastObj[lastKey].subscribedClients = existingSubscribedClients
+          lastObj[lastKey].subscribedClients = {
+            ...lastObj[lastKey].subscribedClients,
+            [clientAddress]: socket
+          }
         }
 
         console.log(subscriptions)
