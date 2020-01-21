@@ -31,11 +31,21 @@ server.on('connection', (socket, req) => {
             [clientAddress]: socket
           }
         }
-
-        console.log(subscriptions)
+        console.log('sub', JSON.stringify(subscriptions, null, 2))
         break
       }
       case 'unsubscribe': {
+        const keys = message.topic.split('.')
+        const lastKey = keys.pop()
+        const lastObj = keys.reduce(
+          (obj, key) => (obj[key] = obj[key] || {}),
+          subscriptions
+        )
+
+        if (lastObj[lastKey].subscribedClients[clientAddress]) {
+          delete lastObj[lastKey].subscribedClients[clientAddress]
+        }
+        console.log('unsub', JSON.stringify(subscriptions, null, 2))
         break
       }
       case 'publish': {

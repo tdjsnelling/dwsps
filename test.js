@@ -34,4 +34,20 @@ socket.on('open', () => {
       topic: 'news'
     })
   )
+
+  socket.send(
+    JSON.stringify({
+      type: 'unsubscribe',
+      timestamp: new Date(),
+      topic: 'news.uk.london'
+    })
+  )
+
+  socket.send(
+    JSON.stringify({
+      type: 'unsubscribe',
+      timestamp: new Date(),
+      topic: 'news.uk'
+    })
+  )
 })
