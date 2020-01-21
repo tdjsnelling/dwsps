@@ -17,27 +17,18 @@ socket.on('open', () => {
 
   socket.send(
     JSON.stringify({
+      type: 'subscribe',
+      timestamp: new Date(),
+      topic: 'news.uk'
+    })
+  )
+
+  socket.send(
+    JSON.stringify({
       type: 'publish',
       timestamp: new Date(),
-      topic: 'news',
+      topic: 'news.uk.london',
       message: 'Hello, world!'
-    })
-  )
-
-  socket.send(
-    JSON.stringify({
-      type: 'unsubscribe',
-      timestamp: new Date(),
-      topic: 'news'
-    })
-  )
-
-  socket.send(
-    JSON.stringify({
-      type: 'publish',
-      timestamp: new Date(),
-      topic: 'news',
-      message: 'Hello, world! -- again'
     })
   )
 })
