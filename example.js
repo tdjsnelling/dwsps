@@ -15,7 +15,7 @@ server2.on('subscribe', (topic, client) => {
   console.log(`Server 2: ${client} subscribed to ${topic}`)
 })
 
-// Create 2 clients, one subscribed to each server
+// Create 2 clients, one connected to each server
 const client1 = new PSClient('ws://localhost:8000')
 const client2 = new PSClient('ws://localhost:8001')
 
