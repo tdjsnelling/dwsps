@@ -2,9 +2,18 @@
 
 **ps** is a distributed nodejs pub/sub system. It uses websockets to transmit messages between client and server, and between peered servers.
 
+- [Topics](#topics)
+- [Messages](#messages)
+- [Acknowledgements](#acknowledgements)
+- [Distribution](#distribution)
+- [Usage](#usage)
+  - [Basic server example](#basic-server-example)
+  - [Basic client example](#basic-client-example)
+- [License](#license)
+
 ## Topics
 
-**ps** uses a heirarchical topic system for client subscriptions. For example, a client could subscribe to the topic `news.uk`. They would then recieve messages published to `news.uk`, `news.uk.london`, `news.uk.birmingham` etc. but not from `news.fr` or `news.de`.
+**ps** uses a heirarchical topic system for client subscriptions, each level divided by a full-stop `.`. For example, a client could subscribe to the topic `news.uk`. They would then recieve messages published to `news.uk`, `news.uk.london`, `news.uk.birmingham` etc. but not from `news.fr` or `news.de`.
 
 Note: if a client is subscribed to a parent topic and a sub-topic of the parent, unsubscribing from the parent topic will *not* also unsubscribe the client from the sub-topic. Each subscription must be unsubscribed from explicitly.
 
