@@ -71,6 +71,16 @@ class Server extends EventEmitter {
                 [clientAddress]: socket
               }
             }
+
+            socket.send(
+              JSON.stringify({
+                type: 'ack',
+                action: 'subscribe',
+                timestamp: new Date(),
+                topic: message.topic
+              })
+            )
+
             break
           }
           case 'unsubscribe': {
@@ -88,6 +98,16 @@ class Server extends EventEmitter {
             if (lastObj[lastKey].subscribedClients[clientAddress]) {
               delete lastObj[lastKey].subscribedClients[clientAddress]
             }
+
+            socket.send(
+              JSON.stringify({
+                type: 'ack',
+                action: 'unsubscribe',
+                timestamp: new Date(),
+                topic: message.topic
+              })
+            )
+
             break
           }
           case 'publish': {
@@ -116,6 +136,16 @@ class Server extends EventEmitter {
                 )
               })
             })
+
+            socket.send(
+              JSON.stringify({
+                type: 'ack',
+                action: 'publish',
+                timestamp: new Date(),
+                topic: message.topic
+              })
+            )
+
             break
           }
           default: {

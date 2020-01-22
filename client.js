@@ -10,8 +10,14 @@ class Client extends EventEmitter {
       this.emit('open')
     })
 
-    this.socket.on('message', message => {
-      this.emit('message', message)
+    this.socket.on('message', m => {
+      const message = JSON.parse(m)
+
+      if (message.type === 'ack') {
+        this.emit('ack', m)
+      } else {
+        this.emit('message', m)
+      }
     })
   }
 
