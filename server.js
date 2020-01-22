@@ -2,11 +2,18 @@ const EventEmitter = require('events')
 const ws = require('ws')
 
 class Server extends EventEmitter {
-  constructor(port) {
+  constructor(opts) {
     super()
-    const server = new ws.Server({ port: port || 8000 })
+    const server = new ws.Server({ port: opts.port || 8000 })
 
+    let peers = {}
     let subscriptions = {}
+
+    if (opts.peers) {
+      opts.peers.map(peer => {
+        peers[peer] = new ws(peer)
+      })
+    }
 
     const getTopicSubscribers = topic => {
       const keys = topic.split('.')
@@ -25,6 +32,20 @@ class Server extends EventEmitter {
 
       socket.on('message', m => {
         const message = JSON.parse(m)
+
+        // if a message is organic (not from a peer server) and of the publish
+        // type, then forward it to all peer servers, with the `fromPeerServer`
+        // flag
+        if (!message.fromPeerServer && message.type === 'publish') {
+          Object.keys(peers).map(peer => {
+            peers[peer].send(
+              JSON.stringify({
+                ...message,
+                fromPeerServer: true
+              })
+            )
+          })
+        }
 
         switch (message.type) {
           case 'subscribe': {
