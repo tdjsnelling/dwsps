@@ -59,7 +59,7 @@ See [example.js](./example.js) for an example of peering servers.
 ```js
 const PSServer = require('ps/server')
 
-const server = new PSServer(8000)
+const server = new PSServer({ port: 8000 })
 
 server.on('subscribe', (topic, client) => {
   console.log(`${client} subscribed to ${topic}`)
