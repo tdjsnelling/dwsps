@@ -6,6 +6,8 @@
 
 **ps** uses a heirarchical topic system for client subscriptions. For example, a client could subscribe to the topic `news.uk`. They would then recieve messages published to `news.uk`, `news.uk.london`, `news.uk.birmingham` etc. but not from `news.fr` or `news.de`.
 
+Note: if a client is subscribed to a parent topic and a sub-topic of the parent, unsubscribing from the parent topic will *not* also unsubscribe the client from the sub-topic. Each subscription must be unsubscribed from explicitly.
+
 ## Messages
 
 Messages are JSON format and look like the following:
