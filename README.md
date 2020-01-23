@@ -56,7 +56,7 @@ Multiple **ps** servers can be peered with one another to create a distributed n
 
 Messages that were forwarded from another server will also contain a `fromPeerServer: true` flag.
 
-See [example.js](./example.js) for an example of peering servers.
+Note: adding Server A as a peer of Server B will not enable 2-way communication: B will forward messages to A but not vice versa. Server B must also be added as a peer of Server A. See [example.js](./example.js) for an example of peering servers.
 
 ## Usage
 
@@ -99,7 +99,7 @@ client.on('message', message => {
 })
 ```
 
-If you only want to take action on certain received events, you can either:
+If you only want to take action on certain received messages, you can either:
 
 - Implement this yourself using the event listener method and parsing the message topic, or
 - Pass a callback function to the `subscribe` method which will only be called when a message is received matching that particular subscription.
