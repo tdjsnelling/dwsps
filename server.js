@@ -61,15 +61,10 @@ class Server extends EventEmitter {
             // create an empty object if it doesn't already exist
             if (!lastObj[lastKey]) lastObj[lastKey] = {}
 
-            // if there is no subscribed clients object, create one and add this
-            // client. else just add this client to the list
-            if (!lastObj[lastKey].subscribedClients) {
-              lastObj[lastKey].subscribedClients = { [clientAddress]: socket }
-            } else {
-              lastObj[lastKey].subscribedClients = {
-                ...lastObj[lastKey].subscribedClients,
-                [clientAddress]: socket
-              }
+            // add this client to the list of subscriptions for this topic
+            lastObj[lastKey].subscribedClients = {
+              ...lastObj[lastKey].subscribedClients,
+              [clientAddress]: socket
             }
 
             socket.send(
@@ -93,8 +88,8 @@ class Server extends EventEmitter {
               subscriptions
             )
 
-            // if this client is in the list of subscribed clients for this topic,
-            // delete it
+            // if this client is in the list of subscribed clients for this
+            // topic, delete it
             if (lastObj[lastKey].subscribedClients[clientAddress]) {
               delete lastObj[lastKey].subscribedClients[clientAddress]
             }
@@ -126,9 +121,9 @@ class Server extends EventEmitter {
               allSubscribers[topicString] = topicSubscribers
             }
 
-            // forward the published messaged. the receiver may not by explicitly
-            // subscribed to `message.topic` so add a `context` to tell them which
-            // subscription caused them to receive the message
+            // forward the published messaged. the receiver may not by
+            // explicitly subscribed to `message.topic` so add a `context` to
+            // tell them which subscription caused them to receive the message
             Object.keys(allSubscribers).map(topic => {
               Object.keys(allSubscribers[topic]).map(client => {
                 allSubscribers[topic][client].send(
