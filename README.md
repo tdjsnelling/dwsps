@@ -1,6 +1,8 @@
-# ps _(publish/subscribe)_
+# dwsps
 
-**ps** is a distributed nodejs pub/sub system. It uses websockets to transmit messages between client and server, and between peered servers.
+> _distributed websocket publish/subscribe_
+
+**dwsps** is a distributed nodejs pub/sub system. It uses websockets to transmit messages between client and server, and between peered servers.
 
 - [Topics](#topics)
 - [Messages](#messages)
@@ -13,7 +15,7 @@
 
 ## Topics
 
-**ps** uses a heirarchical topic system for client subscriptions, each level divided by a full-stop `.`. For example, a client could subscribe to the topic `news.uk`. They would then recieve messages published to `news.uk`, `news.uk.london`, `news.uk.birmingham` etc. but not from `news.fr` or `news.de`.
+**dwsps** uses a heirarchical topic system for client subscriptions, each level divided by a full-stop `.`. For example, a client could subscribe to the topic `news.uk`. They would then recieve messages published to `news.uk`, `news.uk.london`, `news.uk.birmingham` etc. but not from `news.fr` or `news.de`.
 
 Note: if a client is subscribed to a parent topic and a sub-topic of the parent, unsubscribing from the parent topic will _not_ also unsubscribe the client from the sub-topic. Each subscription must be unsubscribed from explicitly.
 
@@ -52,7 +54,7 @@ Ack messages look like this:
 
 ## Distribution
 
-Multiple **ps** servers can be peered with one another to create a distributed network. Once servers are peered, then a message published to one server will also be published to all servers, and delivered to their own subscribed clients respectively. Subscribed clients are not replicated between servers, instead held in memory on a per server basis.
+Multiple **dwsps** servers can be peered with one another to create a distributed network. Once servers are peered, then a message published to one server will also be published to all servers, and delivered to their own subscribed clients respectively. Subscribed clients are not replicated between servers, instead held in memory on a per server basis.
 
 Messages that were forwarded from another server will also contain a `fromPeerServer: true` flag.
 
@@ -63,7 +65,7 @@ Note: adding Server A as a peer of Server B will not enable 2-way communication:
 ### Basic server example
 
 ```js
-const PSServer = require('ps/server')
+const PSServer = require('dwsps/server')
 
 const server = new PSServer({ port: 8000 })
 
@@ -77,7 +79,7 @@ server.on('subscribe', (topic, client) => {
 In this example, an event listener is used to receive all messages from every topic the client is subscribed to.
 
 ```js
-const PSClient = require('ps/client')
+const PSClient = require('dwsps/client')
 
 const client = new PSClient('ws://localhost:8000')
 
@@ -105,7 +107,7 @@ If you only want to take action on certain received messages, you can either:
 - Pass a callback function to the `subscribe` method which will only be called when a message is received matching that particular subscription.
 
 ```js
-const PSClient = require('ps/client')
+const PSClient = require('dwsps/client')
 
 const client = new PSClient('ws://localhost:8000')
 

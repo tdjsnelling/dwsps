@@ -1,9 +1,9 @@
 {
-  "name": "ps",
+  "name": "dwsps",
   "version": "1.0.0",
-  "description": "A tiny, distributed, lightning fast pub/sub system",
+  "description": "A tiny, distributed, lightning fast websocket pub/sub system",
   "main": "index.js",
-  "repository": "https://github.com/tdjsnelling/ps",
+  "repository": "https://github.com/tdjsnelling/dwsps",
   "author": "Tom Snelling <@tdjsnelling>",
   "license": "MIT",
   "dependencies": {
