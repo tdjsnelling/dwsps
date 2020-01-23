@@ -74,6 +74,8 @@ server.on('subscribe', (topic, client) => {
 
 ### Basic client example
 
+In this example, an event listener is used to receive all messages from every topic the client is subscribed to.
+
 ```js
 const PSClient = require('ps/client')
 
@@ -94,6 +96,29 @@ client.on('ack', ack => {
 // Log messages received by the client
 client.on('message', message => {
   console.log(message)
+})
+```
+
+If you only want to take action on certain received events, you can either:
+
+- Implement this yourself using the event listener method and parsing the message topic, or
+- Pass a callback function to the `subscribe` method which will only be called when a message is received matching that particular subscription.
+
+```js
+const PSClient = require('ps/client')
+
+const client = new PSClient('ws://localhost:8000')
+
+// Create a callback function that will be called when the client receives a
+// message matching the topic `news`.
+const newsHandler = message => {
+  console.log(message)
+}
+
+// Must wait for client to establish connection before performing actions
+client.on('open', () => {
+  client.subscribe('news', newsHandler)
+  client.publish('news', 'Hello news channel!')
 })
 ```
 
