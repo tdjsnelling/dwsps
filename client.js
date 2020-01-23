@@ -21,7 +21,7 @@ class Client extends EventEmitter {
     })
   }
 
-  subscribe(topic) {
+  subscribe(topic, handler = null) {
     this.socket.send(
       JSON.stringify({
         type: 'subscribe',
@@ -29,6 +29,16 @@ class Client extends EventEmitter {
         topic: topic
       })
     )
+
+    if (handler) {
+      this.socket.on('message', m => {
+        const message = JSON.parse(m)
+
+        if (message.type === 'publish' && message.topic === topic) {
+          return handler(m)
+        }
+      })
+    }
   }
 
   unsubscribe(topic) {

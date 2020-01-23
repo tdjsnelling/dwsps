@@ -1,4 +1,4 @@
-# ps *(publish/subscribe)*
+# ps _(publish/subscribe)_
 
 **ps** is a distributed nodejs pub/sub system. It uses websockets to transmit messages between client and server, and between peered servers.
 
@@ -15,11 +15,12 @@
 
 **ps** uses a heirarchical topic system for client subscriptions, each level divided by a full-stop `.`. For example, a client could subscribe to the topic `news.uk`. They would then recieve messages published to `news.uk`, `news.uk.london`, `news.uk.birmingham` etc. but not from `news.fr` or `news.de`.
 
-Note: if a client is subscribed to a parent topic and a sub-topic of the parent, unsubscribing from the parent topic will *not* also unsubscribe the client from the sub-topic. Each subscription must be unsubscribed from explicitly.
+Note: if a client is subscribed to a parent topic and a sub-topic of the parent, unsubscribing from the parent topic will _not_ also unsubscribe the client from the sub-topic. Each subscription must be unsubscribed from explicitly.
 
 ## Messages
 
 Messages are JSON format and look like the following:
+
 ```
 {
   "type": "publish",
@@ -29,21 +30,17 @@ Messages are JSON format and look like the following:
   "message": "Hello news.uk channel!"
 }
 ```
-* `topic` lets a client know where the message was published to
-* `context` lets a client know *why* they are receiving a certain message - in this instance the client is subscribed to `news`, where they received it, but not `news.uk`, where it was sent.
-* `message` can be a string or an object
+
+- `topic` lets a client know where the message was published to
+- `context` lets a client know _why_ they are receiving a certain message - in this instance the client is subscribed to `news`, where they received it, but not `news.uk`, where it was sent.
+- `message` can be a string or an object
 
 ## Acknowledgements
 
-When a client performs an action, the server will send an acknowledgment in reply if it received the message and executed the action correctly. These can be listened for with the client `ack` event e.g.:
-
-```js
-client.on('ack', message => {
-  console.log(message)
-}
-```
+When a client performs an action, the server will send an acknowledgment in reply if it received the message and executed the action correctly. These can be listened for with the client `ack` event.
 
 Ack messages look like this:
+
 ```
 {
   "type": "ack",
@@ -89,13 +86,15 @@ client.on('open', () => {
   client.publish('news.uk', 'Hello news.uk channel!')
 })
 
-// Log messages received by the client
-client.on('message', () => {
-  console.log(message)
+// Log acknowledgments from the server
+client.on('ack', ack => {
+  console.log(ack)
 })
 
-// => {"type":"publish","timestamp":"2020-01-21T17:03:13.625Z","topic":"news","message":"Hello news channel!","context":"news"}
-// => {"type":"publish","timestamp":"2020-01-21T17:03:13.625Z","topic":"news.uk","message":"Hello news.uk channel!","context":"news"}
+// Log messages received by the client
+client.on('message', message => {
+  console.log(message)
+})
 ```
 
 ## License
