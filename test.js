@@ -78,6 +78,33 @@ describe('dwsps', () => {
       })
     })
 
+    describe('peering', () => {
+      it('client B on server B should receive a message published to server A by client A', done => {
+        clientB.subscribe('topic')
+        clientA.publish('topic', 'Hello world')
+        clientB.on('message', message => {
+          message = JSON.parse(message)
+          if (message.type === 'publish' && message.fromPeerServer) {
+            done()
+          }
+        })
+      })
+      it('client A on server A should receive a message published to server B by client B', done => {
+        clientA.subscribe('topic')
+        clientB.publish('topic', 'Hello world')
+        clientA.on('message', message => {
+          message = JSON.parse(message)
+          if (message.type === 'publish' && message.fromPeerServer) {
+            done()
+          }
+        })
+      })
+      after(() => {
+        clientA.removeAllListeners()
+        clientB.removeAllListeners()
+      })
+    })
+
     describe('messages', () => {
       describe('topic heirarchy', () => {
         it('should recieve a message published to a subtopic', done => {
@@ -135,22 +162,6 @@ describe('dwsps', () => {
           clientA.publish('topic', 'Hello world')
           clientA.unsubscribe('topic')
         })
-      })
-    })
-
-    describe('peering', () => {
-      it('client B on server B should receive a message published to server A by client A', done => {
-        clientB.subscribe('topic')
-        clientA.publish('topic', 'Hello world')
-        clientB.on('message', message => {
-          message = JSON.parse(message)
-          if (message.type === 'publish' && message.fromPeerServer) {
-            done()
-          }
-        })
-      })
-      after(() => {
-        clientB.removeAllListeners()
       })
     })
   })
