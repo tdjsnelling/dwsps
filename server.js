@@ -22,7 +22,9 @@ class Server extends EventEmitter {
         (obj, key) => (obj[key] = obj[key] || {}),
         subscriptions
       )
-      return lastObj[lastKey] ? lastObj[lastKey].subscribedClients : {}
+      return lastObj[lastKey] && lastObj[lastKey].subscribedClients
+        ? lastObj[lastKey].subscribedClients
+        : {}
     }
 
     server.on('connection', (socket, req) => {
