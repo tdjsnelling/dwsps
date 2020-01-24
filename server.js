@@ -7,7 +7,6 @@ class Server extends EventEmitter {
     const server = new ws.Server({ port: opts.port || 8000 })
 
     let peers = {}
-    let subscriptions = {}
 
     // open sockets with all peer servers
     if (opts.peers) {
@@ -16,10 +15,8 @@ class Server extends EventEmitter {
       })
     }
 
-    const heartbeat = () => {
-      this.isAlive = true
-    }
-
+    // ping every client at 10 second intervals, terminate them if they do not
+    // respond
     setInterval(() => {
       server.clients.forEach(socket => {
         if (socket.isAlive === false) socket.terminate()
@@ -28,62 +25,33 @@ class Server extends EventEmitter {
       })
     }, 10000)
 
-    const getTopicSubscribers = topic => {
-      const keys = topic.split('.')
-      const lastKey = keys.pop()
-      const lastObj = keys.reduce(
-        (obj, key) => (obj[key] = obj[key] || {}),
-        subscriptions
-      )
-      return lastObj[lastKey] && lastObj[lastKey].subscribedClients
-        ? lastObj[lastKey].subscribedClients
-        : {}
-    }
-
     server.on('connection', (socket, req) => {
       const clientId = req.headers['sec-websocket-key']
 
+      // set some client defaults
       socket.id = clientId
       socket.isAlive = true
-      socket.on('pong', heartbeat)
+      socket.subscriptions = []
+      socket.on('pong', () => {
+        this.isAlive = true
+      })
 
-      socket.on('message', m => {
-        const message = JSON.parse(m)
-
-        // if a message is organic (not from a peer server) and of the publish
-        // type, then forward it to all peer servers, with the `fromPeerServer`
-        // flag
-        if (!message.fromPeerServer && message.type === 'publish') {
-          Object.keys(peers).map(peer => {
-            peers[peer].send(
-              JSON.stringify({
-                ...message,
-                fromPeerServer: true
-              })
-            )
-          })
-        }
+      socket.on('message', message => {
+        message = JSON.parse(message)
 
         switch (message.type) {
           case 'subscribe': {
             this.emit('subscribe', message.topic, clientId)
 
-            const keys = message.topic.split('.')
-            const lastKey = keys.pop()
-            const lastObj = keys.reduce(
-              (obj, key) => (obj[key] = obj[key] || { subscribedClients: {} }),
-              subscriptions
-            )
-
-            // create an empty object if it doesn't already exist
-            if (!lastObj[lastKey]) lastObj[lastKey] = {}
-
-            // add this client to the list of subscriptions for this topic
-            lastObj[lastKey].subscribedClients = {
-              ...lastObj[lastKey].subscribedClients,
-              [clientId]: socket
+            // add this topic to the list of client subscriptions if it is not
+            // there already
+            const existingSubscriptions = [...socket.subscriptions]
+            if (!(message.topic in existingSubscriptions)) {
+              existingSubscriptions.push(message.topic)
+              socket.subscriptions = existingSubscriptions
             }
 
+            // send a subscribe acknowledgement message
             socket.send(
               JSON.stringify({
                 type: 'ack',
@@ -98,19 +66,18 @@ class Server extends EventEmitter {
           case 'unsubscribe': {
             this.emit('unsubscribe', message.topic, clientId)
 
-            const keys = message.topic.split('.')
-            const lastKey = keys.pop()
-            const lastObj = keys.reduce(
-              (obj, key) => (obj[key] = obj[key] || {}),
-              subscriptions
-            )
+            // remove this topic from the list of client subscriptions
+            if (socket.subscriptions) {
+              const existingSubscriptions = [...socket.subscriptions]
+              const index = existingSubscriptions.indexOf(message.topic)
 
-            // if this client is in the list of subscribed clients for this
-            // topic, delete it
-            if (lastObj[lastKey].subscribedClients[clientId]) {
-              delete lastObj[lastKey].subscribedClients[clientId]
+              if (index) {
+                existingSubscriptions.splice(index, 1)
+                socket.subscriptions = existingSubscriptions
+              }
             }
 
+            // send an unsubscribe acknowledgement message
             socket.send(
               JSON.stringify({
                 type: 'ack',
@@ -134,7 +101,9 @@ class Server extends EventEmitter {
             // `news.uk` and `news.uk.london` etc.
             for (let i = topics.length; i >= 1; i--) {
               const topicString = topics.slice(0, i).join('.')
-              const topicSubscribers = getTopicSubscribers(topicString)
+              const topicSubscribers = [...server.clients].filter(client => {
+                return client.subscriptions.includes(topicString)
+              })
               allSubscribers[topicString] = topicSubscribers
             }
 
@@ -149,6 +118,20 @@ class Server extends EventEmitter {
               })
             })
 
+            // if a message is organic (not from a peer server) then forward it
+            // to all peer servers, with the `fromPeerServer` flag
+            if (!message.fromPeerServer) {
+              Object.keys(peers).map(peer => {
+                peers[peer].send(
+                  JSON.stringify({
+                    ...message,
+                    fromPeerServer: true
+                  })
+                )
+              })
+            }
+
+            // send a publish acknowledgement message
             socket.send(
               JSON.stringify({
                 type: 'ack',
@@ -160,9 +143,7 @@ class Server extends EventEmitter {
 
             break
           }
-          default: {
-            // do nothing
-          }
+          default:
         }
       })
     })
