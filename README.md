@@ -2,6 +2,8 @@
 
 > _distributed websocket publish/subscribe_
 
+[![CircleCI](https://circleci.com/gh/tdjsnelling/dwsps.svg?style=svg)](https://circleci.com/gh/tdjsnelling/dwsps)
+
 **dwsps** is a distributed nodejs pub/sub system. It uses websockets to transmit messages between client and server, and between peered servers.
 
 - [Topics](#topics)
