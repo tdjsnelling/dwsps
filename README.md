@@ -37,7 +37,7 @@ Messages are JSON format and look like the following:
 
 - `topic` lets a client know where the message was published to
 - `context` lets a client know _why_ they are receiving a certain message - in this instance the client is subscribed to `news`, where they received it, but not `news.uk`, where it was sent.
-- `message` can be a string or an object
+- `message` can be any valid JSON data
 
 ## Acknowledgements
 
