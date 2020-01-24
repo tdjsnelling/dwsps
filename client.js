@@ -61,6 +61,10 @@ class Client extends EventEmitter {
       })
     )
   }
+
+  close() {
+    this.socket.close()
+  }
 }
 
 module.exports = Client

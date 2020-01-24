@@ -9,11 +9,24 @@ class Server extends EventEmitter {
     let peers = {}
     let subscriptions = {}
 
+    // open sockets with all peer servers
     if (opts.peers) {
       opts.peers.map(peer => {
         peers[peer] = new ws(peer)
       })
     }
+
+    const heartbeat = () => {
+      this.isAlive = true
+    }
+
+    setInterval(() => {
+      server.clients.forEach(socket => {
+        if (socket.isAlive === false) socket.terminate()
+        socket.isAlive = false
+        socket.ping()
+      })
+    }, 10000)
 
     const getTopicSubscribers = topic => {
       const keys = topic.split('.')
@@ -28,9 +41,11 @@ class Server extends EventEmitter {
     }
 
     server.on('connection', (socket, req) => {
-      const clientAddress = req.headers['x-forwarded-for']
-        ? req.headers['x-forwarded-for'].split(/\s*,\s*/)[0]
-        : req.connection.remoteAddress
+      const clientId = req.headers['sec-websocket-key']
+
+      socket.id = clientId
+      socket.isAlive = true
+      socket.on('pong', heartbeat)
 
       socket.on('message', m => {
         const message = JSON.parse(m)
@@ -51,7 +66,7 @@ class Server extends EventEmitter {
 
         switch (message.type) {
           case 'subscribe': {
-            this.emit('subscribe', message.topic, clientAddress)
+            this.emit('subscribe', message.topic, clientId)
 
             const keys = message.topic.split('.')
             const lastKey = keys.pop()
@@ -66,7 +81,7 @@ class Server extends EventEmitter {
             // add this client to the list of subscriptions for this topic
             lastObj[lastKey].subscribedClients = {
               ...lastObj[lastKey].subscribedClients,
-              [clientAddress]: socket
+              [clientId]: socket
             }
 
             socket.send(
@@ -81,7 +96,7 @@ class Server extends EventEmitter {
             break
           }
           case 'unsubscribe': {
-            this.emit('unsubscribe', message.topic, clientAddress)
+            this.emit('unsubscribe', message.topic, clientId)
 
             const keys = message.topic.split('.')
             const lastKey = keys.pop()
@@ -92,8 +107,8 @@ class Server extends EventEmitter {
 
             // if this client is in the list of subscribed clients for this
             // topic, delete it
-            if (lastObj[lastKey].subscribedClients[clientAddress]) {
-              delete lastObj[lastKey].subscribedClients[clientAddress]
+            if (lastObj[lastKey].subscribedClients[clientId]) {
+              delete lastObj[lastKey].subscribedClients[clientId]
             }
 
             socket.send(
@@ -108,7 +123,7 @@ class Server extends EventEmitter {
             break
           }
           case 'publish': {
-            this.emit('publish', message.topic, clientAddress)
+            this.emit('publish', message.topic, clientId)
 
             const topics = message.topic.split('.')
 

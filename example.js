@@ -40,6 +40,10 @@ client2.on('open', () => {
   client2.subscribe('news.uk')
 })
 
+setTimeout(() => {
+  client1.close()
+  client2.close()
+}, 2000)
 /*
 => Server 1: ::ffff:127.0.0.1 subscribed to news
 => Server 2: ::ffff:127.0.0.1 subscribed to news.uk
