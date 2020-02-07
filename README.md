@@ -83,6 +83,7 @@ In this example, an event listener is used to receive all messages from every to
 
 ```js
 const PSClient = require('dwsps/client')
+//            or require('dwsps')
 
 const client = new PSClient('ws://localhost:8000')
 

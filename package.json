@@ -1,11 +1,12 @@
 {
   "name": "dwsps",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A tiny, distributed, lightning fast websocket pub/sub system",
   "main": "index.js",
   "repository": "https://github.com/tdjsnelling/dwsps",
   "author": "Tom Snelling <@tdjsnelling>",
   "license": "MIT",
+  "main": "client.js",
   "scripts": {
     "test": "mocha test.js",
     "lint": "eslint ."
