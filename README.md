@@ -4,6 +4,7 @@
 
 [![CircleCI](https://circleci.com/gh/tdjsnelling/dwsps.svg?style=svg&circle-token=8b2de60c02024d151cb74edfef4a5b4fe456b0b1)](https://circleci.com/gh/tdjsnelling/dwsps)
 ![npm](https://img.shields.io/npm/v/dwsps)
+![npm bundle size](https://img.shields.io/bundlephobia/min/dwsps)
 
 **dwsps** is a distributed nodejs pub/sub system. It uses websockets to transmit messages between client and server, and between peered servers.
 
